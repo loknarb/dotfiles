@@ -1,0 +1,14 @@
+[user]
+	email = Sebastien.Paul.Brumbaugh@empiriecom.com
+	name = s-brum
+[core]
+	pager = diff-so-fancy | less --tabs=4 -RFX
+	editor = code --wait
+[interactive]
+	diffFilter = diff-so-fancy --patch
+  path = ~/work/.gitconfig
+
+[includeIf "gitdir:~/work/"]
+    path = ~/.gitconfig-work
+[includeIf "gitdir:~/personal/"]
+    path = ~/.gitconfig-personal
