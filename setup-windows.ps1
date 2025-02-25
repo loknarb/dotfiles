@@ -341,8 +341,7 @@ function Install-WSL {
                     wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
                     # this is for the current ohmyzsh cloning I'll already have my profile 
                     wsl -d Ubuntu-24.04 -e bash -c "rm ~/.zshrc"
-                    
-                    
+                    wsl -d Ubuntu-24.04 -e bash -c 'LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*') && curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" && tar xf lazygit.tar.gz lazygit && sudo install lazygit -D -t /usr/local/bin/'
 
                     # symlink for batcat to bat
                     wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y lf fzf ripgrep bat && mkdir -p ~/.local/bin && ln -s /usr/bin/batcat ~/.local/bin/bat"

@@ -109,6 +109,7 @@ alias al="echo -----------Your current aliases are:------------ && alias"
 alias fullturbo="git push --no-verify"
 alias gpush="git push -u origin HEAD 2>&1 | grep -o 'https://gitlab\.com/empiriecom/[^/]*/[^/]*/-/merge_requests/new?merge_request%5Bsource_branch%5D=[^ ]*' | xargs open"
 alias gg="lazygit"
+alias ff="~/dotfiles/find-files.sh"
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 export PUPPETEER_EXECUTABLE_PATH=`which chromium`
 
