@@ -167,6 +167,6 @@ ottonl() {
   yarn cli tenant ottonl && yarn dev 
   }
   
-source /Users/brumbas/.docker/init-zsh.sh || true # Added by Docker Desktop
+# source /Users/brumbas/.docker/init-zsh.sh || true # Added by Docker Desktop
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 

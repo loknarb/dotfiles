@@ -1,9 +1,3 @@
-# Requires -RunAsAdministrator
-# In case of error due to permissions do
-# Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -y
-# Windows Setup Script
-
-# Error handling
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
@@ -16,7 +10,7 @@ function Set-CustomRegistryKeys {
     Write-Host "Applying custom registry modifications..."
 
     $registryChanges = @(
-        # Snap-related settings
+        # Snap-related ugliness removed
         @{
             Path = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
             Name = "SnapFill"
@@ -35,13 +29,14 @@ function Set-CustomRegistryKeys {
             Type = "REG_DWORD"
             Value = "0"
         },
-        # System policies and keyboard layout
+        # Attempt to block LWin+L from locking our window movement 
         @{
             Path = "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\System"
             Name = "DisableLockWorkstation"
             Type = "REG_DWORD"
             Value = "1"
         },
+        # this swaps CTRL with LWin and vice versa
         @{
             Path = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout"
             Name = "Scancode Map"
@@ -53,6 +48,32 @@ function Set-CustomRegistryKeys {
             Name = "DisableNotificationCenter"
             Type = "REG_DWORD"
             Value = "1"
+        }
+        # Mouse acceleration settings (1 = off, 0 = on)
+        @{
+            Path = "HKEY_CURRENT_USER\Control Panel\Mouse"
+            Name = "MouseSpeed"
+            Type = "REG_DWORD"
+            Value = "0"
+        },
+        @{
+            Path = "HKEY_CURRENT_USER\Control Panel\Mouse"
+            Name = "MouseThreshold1"
+            Type = "REG_DWORD"
+            Value = "0"
+        },
+        @{
+            Path = "HKEY_CURRENT_USER\Control Panel\Mouse"
+            Name = "MouseThreshold2"
+            Type = "REG_DWORD"
+            Value = "0"
+        },
+        # Windows Mouse Pointer Speed (6/11 setting)
+        @{
+            Path = "HKEY_CURRENT_USER\Control Panel\Mouse"
+            Name = "MouseSensitivity"
+            Type = "REG_SZ"
+            Value = "10"
         }
     )
 
@@ -96,18 +117,15 @@ function Install-WingetPackages {
         'SumatraPDF.SumatraPDF',
         'VideoLAN.VLC',
         'Mozilla.Firefox',
-        'TheBrowserCompany.Arc',
         'AutoHotkey.AutoHotkey',
         'Bitwarden.Bitwarden',
         'Microsoft.VisualStudioCode',
-        'Spotify.Spotify',
         'Anki.Anki',
         'DeepL.DeepL',
         'Microsoft.PowerToys',
         'Valve.Steam',
         'ShareX.ShareX',
         'Obsidian.Obsidian',
-        'Flow-Launcher.Flow-Launcher',
         'JesseDuffield.lazygit',
         'gokcehan.lf',
         'calibre.calibre'
@@ -277,90 +295,187 @@ function Install-AutoHotkeyScript {
 function Install-WSL {
     # wsl --manage <distro_name> --move <new_location>
     Write-Status "Setting up WSL2 with Ubuntu-24.04"
+    $maxAttempts = 3
+    $attempt = 1
+    $success = $false 
+    while ($attempt -le $maxAttempts -and -not $success) {
+        try {
+            Write-Host "Attempt $attempt of $maxAttempts..."
+            # Check if WSL is already installed
+            $wslCheck = wsl --version 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "Installing WSL..."
 
-    try {
-        # Check if WSL is already installed
-        $wslCheck = wsl --version 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "Installing WSL..."
+                wsl --update
+                
+                Write-Warning "WSL installation completed. A system restart may be required before proceeding with Ubuntu setup."
+                return
+            }
+            wsl --install Ubuntu-24.04
 
-	        wsl --update
-            
-            Write-Warning "WSL installation completed. A system restart may be required before proceeding with Ubuntu setup."
-            return
+            wsl --shutdown 
+            # personalised to actually go to my biggest disk (maybe if you copied this dont do this..)
+            $newLocation = 'D:\WSL\'
+            wsl --manage Ubuntu-24.04 --move $newLocation
+
+            # Set permissions on the new location this stops us from getting a Access is denied
+            $acl = Get-Acl $newLocation
+            $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+            $acl.SetAccessRule($accessRule)
+            Set-Acl $newLocation $acl
+
+            # Setup Ubuntu environment
+            Write-Host "Setting up Ubuntu environment..."
+                    wsl -d Ubuntu-24.04 -e bash -c "sudo useradd -m -s /bin/bash -G sudo --disabled-password seb"
+
+                    wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/loknarb/dotfiles ~/dotfiles"
+
+                    
+                    
+
+                    wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y zsh"
+
+                    wsl -d Ubuntu-24.04 -e bash -c "sudo apt update && sudo apt install -y git curl && curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k"
+
+                    wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+                    wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+                    # this is for the current ohmyzsh cloning I'll already have my profile 
+                    wsl -d Ubuntu-24.04 -e bash -c "rm ~/.zshrc"
+                    
+                    
+
+                    # symlink for batcat to bat
+                    wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y lf fzf ripgrep bat && mkdir -p ~/.local/bin && ln -s /usr/bin/batcat ~/.local/bin/bat"
+                    # install nvm or node in this linux
+                    wsl -d Ubuntu-24.04 -e bash -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
+
+                    # symlinks  
+                    wsl -d Ubuntu-24.04 -e bash -c "ln -s ~/dotfiles/.gitconfig ~/.gitconfig && ln -s ~/dotfiles/.gitconfig-work ~/.gitconfig-work && ln -s ~/dotfiles/.gitconfig-personal ~/.gitconfig-personal && ln -s ~/dotfiles/.zshrc ~/.zshrc"
+
+
+                    wsl -d Ubuntu-24.04 -e bash -c "mkdir ~/work && mkdir ~/personal && code ~"
+                    $success = $true
+                    Write-Host "WSL setup completed successfully!" -ForegroundColor Green                   
         }
-        wsl --install Ubuntu-24.04
-
-        wsl --shutdown 
-        # personalised to actually go to my biggest disk (maybe if you copied this dont do this..)
-        $newLocation = 'D:\WSL\'
-        wsl --manage Ubuntu-24.04 --move $newLocation
-
-        # Set permissions on the new location this stops us from getting a Access is denied
-        $acl = Get-Acl $newLocation
-        $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
-        $acl.SetAccessRule($accessRule)
-        Set-Acl $newLocation $acl
-
-        # Setup Ubuntu environment
-        Write-Host "Setting up Ubuntu environment..."
-                wsl -d Ubuntu-24.04 -e bash -c "sudo useradd -m -s /bin/bash -G sudo --disabled-password seb"
-
-                wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/loknarb/dotfiles ~/dotfiles"
-
-                
-                
-
-                wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y zsh"
-
-                wsl -d Ubuntu-24.04 -e bash -c "sudo apt update && sudo apt install -y git curl && curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k"
-
-                wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-                wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-                # this is for the current ohmyzsh cloning I'll already have my profile 
-                wsl -d Ubuntu-24.04 -e bash -c "rm ~/.zshrc"
-                
-                
-
-                # symlink for batcat to bat
-                wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y lf fzf ripgrep bat && mkdir -p ~/.local/bin && ln -s /usr/bin/batcat ~/.local/bin/bat"
-                # install nvm or node in this linux
-                wsl -d Ubuntu-24.04 -e bash -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
-
-                # symlinks  
-                wsl -d Ubuntu-24.04 -e bash -c "ln -s ~/dotfiles/.gitconfig ~/.gitconfig && ln -s ~/dotfiles/.gitconfig-work ~/.gitconfig-work && ln -s ~/dotfiles/.gitconfig-personal ~/.gitconfig-personal && ln -s ~/dotfiles/.zshrc ~/.zshrc"
-
-
-                wsl -d Ubuntu-24.04 -e bash -c "mkdir ~/work && mkdir ~/personal && code ~"
-
-
+        catch {
+            if ($attempt -lt $maxAttempts) {
+                Write-Warning "Attempt $attempt failed: $_"
+                Write-Host "Waiting 30 seconds before next attempt..."
+                Start-Sleep -Seconds 30
+            }
+            else {
+                Write-Error "All attempts failed. Last error: $_"
+                throw
+            }
+        }
+    $attempt++
     }
-    catch {
-        Write-Error "WSL setup failed: $_"
+}
+
+ # Main execution
+
+function Write-CustomStatus {
+    param([string]$Message)
+    # Using Write-Host is safe in both contexts
+    Write-Host "`n==> $Message" -ForegroundColor Cyan
+}
+
+function Test-AdminPrivileges {
+    return ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Start-AdminScript {
+    if (-not (Test-AdminPrivileges)) {
+        Write-CustomStatus "Launching administrative portion of setup..."
+        $scriptPath = $null
+        
+        if ($PSCommandPath) {
+            $scriptPath = $PSCommandPath
+        } elseif ($PSScriptRoot) {
+            $scriptPath = Join-Path $PSScriptRoot (Split-Path $PSCommandPath -Leaf)
+        } elseif ($script:MyInvocation.MyCommand.Path) {
+            $scriptPath = $script:MyInvocation.MyCommand.Path
+        } else {
+            throw "Could not determine script path. Please run the script with a fully qualified path."
+        }
+        if (Test-Path $scriptPath) {
+            Write-Verbose "Elevating script: $scriptPath"
+            Start-Process powershell -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -AdminMode" -Wait
+            return $false
+        } else {
+            throw "Script path not found: $scriptPath"
+        }
+    }
+    return $true
+}
+
+function Install-UserTools {
+    Write-CustomStatus "Installing user-level packages..."
+    
+    # Scoop installation and packages
+    if (!(Get-Command scoop -ErrorAction SilentlyContinue)) {
+        Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+        Invoke-RestMethod get.scoop.sh | Invoke-Expression
+    }
+    
+    scoop install git
+    scoop bucket add extras
+    scoop update
+
+    $ScoopPackages = @(
+        'ripgrep',
+        'fzf',
+        'bat'
+    )
+
+    scoop install @ScoopPackages
+    scoop cache rm *
+
+    # User-level Winget packages
+    $userWingetPackages = @(
+        'TheBrowserCompany.Arc',
+        'Spotify.Spotify'
+    )
+
+    foreach ($package in $userWingetPackages) {
+        try {
+            winget install --source winget --id $package --silent --no-upgrade
+        }
+        catch {
+            Write-Warning "Failed to install $package"
+        }
     }
 }
 
 # Main execution
 try {
-    # Check for admin rights
-    if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        throw "This script requires administrator privileges. Please run as administrator."
+    if ($args.Count -gt 0 -and $args[0] -eq "-AdminMode") {
+        Write-CustomStatus "Running administrative tasks..."
+        # Your existing admin functions
+        Set-CustomRegistryKeys
+        Install-WingetPackages
+        Install-NerdFont -FontName 'CascadiaCode'
+        Remove-UnwantedApps
+        Remove-UnwantedWingetApps
+        Install-WSL
+        Install-AutoHotkeyScript -GitRepoUrl "https://github.com/loknarb/dotfiles" -ScriptName "coding_keybinds.ahk"
+    }
+    else {
+        # First run user-level installations
+        Write-CustomStatus "Starting setup process..."
+        if (Test-AdminPrivileges) {
+            Write-Warning "Script started with admin privileges. Some user-level installations may not work correctly."
+        }
+        
+        Install-UserTools
+
+        # Then trigger admin portion
+        Start-AdminScript
     }
 
-    #Set-CustomRegistryKeys
-    #Install-WingetPackages
-    #Install-NerdFont -FontName 'CascadiaCode'
-    #Remove-UnwantedApps
-    #Remove-UnwantedWingetApps
-    Install-WSL
-
-    #Install-AutoHotkeyScript -GitRepoUrl "https://github.com/loknarb/dotfiles" -ScriptName "coding_keybinds.ahk"
-
-    Write-Status "Setup completed successfully!"
-    Write-Warning "Some changes may require a system restart to take effect."
+    Write-CustomStatus "Setup completed successfully!"
 }
 catch {
     Write-Error "Setup failed: $_"
     exit 1
 }
-
