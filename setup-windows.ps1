@@ -446,12 +446,23 @@ function Install-UserTools {
         }
     }
 }
-
+function Restart-ComputerWithPrompt {
+    Write-Host "`nSetup requires a restart to complete all changes." -ForegroundColor Yellow
+    Write-Host "Press 'r' to restart now, or any other key to exit..." -NoNewline
+    
+    $key = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+    if ($key.Character -eq 'r') {
+        Write-Host "`nRestarting computer in 5 seconds..."
+        Start-Sleep -Seconds 5
+        Restart-Computer -Force
+    } else {
+        Write-Host "`nSkipping restart. Please restart your computer manually to complete setup."
+    }
+}
 # Main execution
 try {
     if ($args.Count -gt 0 -and $args[0] -eq "-AdminMode") {
         Write-CustomStatus "Running administrative tasks..."
-        # Your existing admin functions
         Set-CustomRegistryKeys
         Install-WingetPackages
         Install-NerdFont -FontName 'CascadiaCode'
@@ -474,6 +485,7 @@ try {
     }
 
     Write-CustomStatus "Setup completed successfully!"
+    Restart-ComputerWithPrompt
 }
 catch {
     Write-Error "Setup failed: $_"
