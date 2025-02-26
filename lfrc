@@ -34,5 +34,25 @@ cmd open-editor ${{
     fi
 }}
 
-# Bind the custom command to a key (optional)
-map e :open-editor
+# Trash command using trash-cli
+#sudo apt install trash-cli
+#brew install trash-cli
+# cmd trash %{{
+#     set -f
+#     printf "$fx\n"
+#     printf "trash?[y/n] "
+#     read ans
+#     [ "$ans" = "y" ] && trash-put $fx
+# }}
+
+# Secure delete command with confirmation
+cmd delete %{{
+    set -f
+    printf "$fx\n"
+    printf " delete? [y/n] "
+    read ans
+    [ "$ans" = "y" ] && rm -rf $fx
+}}
+
+# Bind shift+delete to permanent delete
+map D delete
