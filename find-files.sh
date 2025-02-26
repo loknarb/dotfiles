@@ -56,9 +56,14 @@ fi
 # Export current directory as environment variable for subshells
 export SCRIPT_CURRENT_DIR="$(pwd)"
 
-# Function to find the actual file path
+# Create a temporary script with the preview functions
+PREVIEW_SCRIPT=$(mktemp)
+cat << 'EOF' > "$PREVIEW_SCRIPT"
+#!/usr/bin/env bash
+
 resolve_file_path() {
     local file="$1"
+    local current_dir="$2"
     
     # Strip any ANSI color codes that might be present
     file=$(echo "$file" | sed 's/\x1b\[[0-9;]*m//g')
@@ -70,110 +75,71 @@ resolve_file_path() {
     fi
     
     # Check if file exists relative to current directory
-    if [[ -f "$SCRIPT_CURRENT_DIR/$file" ]]; then
-        echo "$SCRIPT_CURRENT_DIR/$file"
+    if [[ -f "$current_dir/$file" ]]; then
+        echo "$current_dir/$file"
         return 0
     fi
     
     # Try to find the file by basename
     local basename_file=$(basename "$file")
-    local found_file=$(find "$SCRIPT_CURRENT_DIR" -type f -name "$basename_file" | head -1)
+    local found_file=$(find "$current_dir" -type f -name "$basename_file" | head -1)
     
     if [[ -n "$found_file" ]]; then
         echo "$found_file"
         return 0
     fi
     
-    # As a last resort, try to find any file in a directory with a matching path
-    local dir_path=$(dirname "$file")
-    if [[ "$dir_path" != "." ]]; then
-        local dir_name=$(basename "$dir_path")
-        local potential_dirs=$(find "$SCRIPT_CURRENT_DIR" -type d -name "$dir_name" | head -1)
-        
-        if [[ -n "$potential_dirs" ]]; then
-            local potential_file="$potential_dirs/$basename_file"
-            if [[ -f "$potential_file" ]]; then
-                echo "$potential_file"
-                return 0
-            fi
-        fi
-    fi
-    
     echo ""
     return 1
 }
 
-# Function to search and preview the file
-search_and_preview_file() {
+preview_file() {
     local file="$1"
     local line="${2:-1}"
+    local current_dir="$3"
     
-    local resolved_path=$(resolve_file_path "$file")
+    local resolved_path=$(resolve_file_path "$file" "$current_dir")
     
     if [[ -n "$resolved_path" ]]; then
         bat --style=numbers --color=always ${line:+--highlight-line "$line"} "$resolved_path"
         return 0
     else
         echo "File not found: $file"
-        echo "Tried:"
-        echo "  $file"
-        echo "  $SCRIPT_CURRENT_DIR/$file"
-        echo "  Files named '$(basename "$file")' in $SCRIPT_CURRENT_DIR"
-        echo "  Files named '$(basename "$file")' in directories named '$(basename "$(dirname "$file")")'"
         return 1
     fi
 }
 
-# Function to open the file in VS Code
-open_in_vscode() {
-    local file="$1"
-    local line="${2:-1}"
-    
-    local resolved_path=$(resolve_file_path "$file")
-    
-    if [[ -n "$resolved_path" ]]; then
-        if [[ -n "$line" && "$line" != "1" ]]; then
-            # Open file at specific line
-            code -g "$resolved_path:$line"
-        else
-            # Open file normally
-            code "$resolved_path"
-        fi
-        return 0
-    else
-        echo "Error: Could not resolve file path for VS Code: $file"
-        return 1
-    fi
-}
+# Call the preview function with all arguments
+preview_file "$1" "$2" "$3"
+EOF
 
-# Export the functions for fzf to use
-export -f search_and_preview_file
-export -f resolve_file_path
-export -f open_in_vscode
+chmod +x "$PREVIEW_SCRIPT"
 
+# Modify the fzf commands to use the temporary preview script
 if [ "$SEARCH_MODE" = true ]; then
-    # Interactive content search mode
     rg --line-number \
        $RG_BASE_OPTS \
        --path-separator / \
        --smart-case "" ${pattern:+--type-add "custom:*.{$(echo $pattern | tr '|' ',')}" --type custom} |
     fzf --delimiter : \
-        --preview 'search_and_preview_file {1} {2}' \
+        --preview "$PREVIEW_SCRIPT {1} {2} $PWD" \
         --preview-window='right:60%' \
         --bind 'ctrl-/:change-preview-window(down|hidden|)' \
-        --bind 'enter:execute(open_in_vscode {1} {2})' \
+        --bind "enter:execute(code -g {1}:{2})" \
         --bind 'change:reload:
             rg --line-number '"$RG_BASE_OPTS"' --path-separator / --smart-case {q} '"${pattern:+--type-add 'custom:*.{$(echo $pattern | tr '|' ',')}' --type custom}"' || true' \
         --disabled \
         --query "" \
         --header 'Type to fuzzy-search file contents. Press CTRL-/ to toggle preview. Enter to open in VS Code.'
 else
-    # Original filename search mode
     rg --files $RG_BASE_OPTS --path-separator / | ([ "$pattern" != ".*" ] && rg "\.($pattern)$" || cat) | \
         fzf --multi \
-            --preview 'search_and_preview_file {}' \
+            --preview "$PREVIEW_SCRIPT {} \"\" $PWD" \
             --preview-window='right:60%' \
             --bind 'ctrl-/:change-preview-window(down|hidden|)' \
-            --bind 'enter:execute(open_in_vscode {})' \
+            --bind "enter:execute(code {})" \
             --header 'Select file to open in VS Code. Press CTRL-/ to toggle preview.'
 fi
+
+# Clean up the temporary script
+rm -f "$PREVIEW_SCRIPT"
