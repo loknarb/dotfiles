@@ -15,30 +15,44 @@ expand_extensions() {
 
 # Function to show usage
 show_usage() {
-    echo "Usage: $0 [-s] [-a] [extension1] [extension2] ..."
+    echo "Usage: $0 [-s] [-a] [-e pattern1,pattern2,...] [extension1] [extension2] ..."
     echo "Options:"
     echo "  -s    Interactive search mode (default: filename only)"
     echo "  -a    Show all files (including gitignored)"
+    echo "  -e    Exclude patterns (comma separated, e.g., '.test.,stories.')"
     echo "Examples:"
     echo "  $0                            # search non-gitignored files"
     echo "  $0 -a                         # search all files"
     echo "  $0 ts md js java              # search specific types"
     echo "  $0 -s -a ts js                # search all files of type"
+    echo "  $0 -e .test.,.stories. ts js  # exclude test and stories files"
     exit 1
 }
 
 # Parse options
 SEARCH_MODE=false
 SHOW_ALL=false
-while getopts "sha" opt; do
+EXCLUDE_PATTERN=""
+while getopts "shae:" opt; do
     case $opt in
         s) SEARCH_MODE=true;;
         a) SHOW_ALL=true;;
+        e) EXCLUDE_PATTERN="$OPTARG";;
         h) show_usage;;
         \?) show_usage;;
     esac
 done
 shift $((OPTIND-1))
+
+# Process exclude patterns
+EXCLUDE_RG_OPTS=""
+if [ -n "$EXCLUDE_PATTERN" ]; then
+    # Convert comma-separated patterns to individual --glob=!*pattern* arguments
+    IFS=',' read -ra EXCLUDE_PATTERNS <<< "$EXCLUDE_PATTERN"
+    for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+        EXCLUDE_RG_OPTS="$EXCLUDE_RG_OPTS --glob=!*$pattern*"
+    done
+fi
 
 # Check for extensions and set pattern
 if [ $# -eq 0 ]; then
@@ -48,7 +62,7 @@ else
 fi
 
 # Set ripgrep base options
-RG_BASE_OPTS="--no-heading --color=never"  # Changed to --color=never to avoid color codes
+RG_BASE_OPTS="--no-heading --color=never $EXCLUDE_RG_OPTS"  # Added exclude options
 if [ "$SHOW_ALL" = true ]; then
     RG_BASE_OPTS="$RG_BASE_OPTS --no-ignore --hidden"
 fi
