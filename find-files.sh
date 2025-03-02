@@ -35,8 +35,13 @@ TYPE_FILTER_ARR=()
 USE_GITIGNORE_OPT=()
 
 # Parse command line options
-while getopts ":e:s:a:h" opt; do
+while getopts ":e:d:s:a:h" opt; do
   case $opt in
+    d) IFS=',' read -ra INCLUDE_PATTERNS <<< "$OPTARG"
+       for pattern in "${INCLUDE_PATTERNS[@]}"; do
+         # Store the pattern for later use
+         INCLUDE_DIRS+=("$pattern")
+       done ;;
     e) IFS=',' read -ra EXCLUDE_PATTERNS <<< "$OPTARG"
        for pattern in "${EXCLUDE_PATTERNS[@]}"; do
          EXCLUDE+=("--glob" "'!*.$pattern.*'")
@@ -62,6 +67,19 @@ if [ ${#PATHS[@]} -eq 1 ]; then
   cd "$SINGLE_DIR_ROOT" || exit
 fi
 
+if [ ${#INCLUDE_DIRS[@]} -gt 0 ] && [ ${#TYPE_PATTERNS[@]} -gt 0 ]; then
+  # If we have both directory patterns and type patterns
+  for dir in "${INCLUDE_DIRS[@]}"; do
+    for type in "${TYPE_PATTERNS[@]}"; do
+      INCLUDE+=("--glob" "'**/$dir/**/*.$type'")
+    done
+  done
+elif [ ${#INCLUDE_DIRS[@]} -gt 0 ]; then
+  # If we only have directory patterns
+  for dir in "${INCLUDE_DIRS[@]}"; do
+    INCLUDE+=("--glob" "'**/$dir/**/*'")
+  done
+fi
 # 1. Search for text in files using Ripgrep
 # 2. Interactively restart Ripgrep with reload action
 # 3. Open the file
@@ -76,15 +94,26 @@ RG_PREFIX=(rg
     --colors 'match:fg:green'
     --colors 'path:fg:white'
     --colors 'path:style:nobold'
-    "${EXCLUDE[@]}"
-    "${TYPE_FILTER_ARR[@]}"
-    --glob "'!**/.git/'"
-    $(array_join "${GLOBS[@]+"${GLOBS[@]}"}")
 )
-if [[ ${#TYPE_FILTER_ARR[@]} -gt 0 ]]; then
-    RG_PREFIX+=("$(printf "%s " "${TYPE_FILTER_ARR[@]}")")
+
+# Add type filters only if we don't have directory+type combinations
+if [ ${#INCLUDE[@]} -eq 0 ]; then
+  RG_PREFIX+=("${TYPE_FILTER_ARR[@]}")
 fi
-RG_PREFIX+=(" 2> /dev/null")
+
+# Add git directory exclusion
+RG_PREFIX+=("--glob" "'!**/.git/'")
+
+# Add include patterns
+RG_PREFIX+=("${INCLUDE[@]}")
+RG_PREFIX+=("${EXCLUDE[@]}")
+
+# Remove the direct execution of RG_PREFIX
+# "${RG_PREFIX[@]}" 2> /dev/null
+
+# Modify how we construct the command string
+RG_PREFIX_STR=$(printf "%s " "${RG_PREFIX[@]}")
+FZF_CMD="$RG_PREFIX_STR '$QUERY' $(array_join "${PATHS[@]+"${PATHS[@]}"}")"
 
 PREVIEW_ENABLED=${FIND_WITHIN_FILES_PREVIEW_ENABLED:-1}
 PREVIEW_COMMAND=${FIND_WITHIN_FILES_PREVIEW_COMMAND:-'bat --decorations=always --color=always {1} --highlight-line {2} --style=header,grid'}
@@ -147,6 +176,7 @@ RG_PREFIX_STR="${RG_PREFIX+"${RG_PREFIX[@]}"}"
 FZF_CMD="${RG_PREFIX+"${RG_PREFIX[@]}"} '$QUERY' $(array_join "${PATHS[@]+"${PATHS[@]}"}")"
 
 # echo $FZF_CMD
+# echo $RG_PREFIX_STR
 # exit 1
 # IFS sets the delimiter
 # -r: raw
@@ -159,9 +189,8 @@ IFS=: read -ra VAL < <(
       --cycle \
       --bind 'ctrl-/:change-preview-window(down|hidden|)' \
       --bind "change:reload:$RG_PREFIX_STR $RG_QUERY_PARSING $(array_join "${PATHS[@]+"${PATHS[@]}"}") || true" \
-      --bind 'enter:execute(code -g {1}: {2})' \
+      --bind 'enter:execute(code -g {1}:{2})' \
       --delimiter : \
       --disabled --query "$INITIAL_QUERY" \
       ${PREVIEW_STR[@]+"${PREVIEW_STR[@]}"}
-      #--history "$LAST_QUERY_FILE" 
 )
