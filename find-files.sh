@@ -2,11 +2,12 @@
 
 # Function to show usage
 show_usage() {
-    echo "Usage: $0 [-s] [-a] [-e pattern1,pattern2,...] [extension1] [extension2] ..."
+    echo "Usage: $0 [-a] [-d pattern1,pattern2,...] [-e pattern1,pattern2,...] [-s extension1,extension2, ...]"
     echo "Options:"
     echo "  -s    Interactive search mode (default: filename only)"
     echo "  -a    Show all files (including gitignored)"
     echo "  -e    Exclude patterns (comma separated, e.g., 'test,stories')"
+    echo "  -d    Directory glob patterns (comma separated, e.g., '**/src/**,**/lib/**')"
     echo "Examples:"
     echo "  ff                            # search non-gitignored files"
     echo "  ff -a                         # search all files"
@@ -28,6 +29,7 @@ array_join() {
 # Code below gets executed as soon as this script is sourced. Think wisely!
 
 # Initialize arrays
+INCLUDE=()
 EXCLUDE=()
 TYPE_FILTER_ARR=()
 USE_GITIGNORE_OPT=()
@@ -48,7 +50,6 @@ while getopts ":e:s:a:h" opt; do
     \?) show_usage;;
   esac
 done
-
 # Shift to remove processed options
 shift $((OPTIND-1))
 
@@ -146,7 +147,6 @@ RG_PREFIX_STR="${RG_PREFIX+"${RG_PREFIX[@]}"}"
 FZF_CMD="${RG_PREFIX+"${RG_PREFIX[@]}"} '$QUERY' $(array_join "${PATHS[@]+"${PATHS[@]}"}")"
 
 # echo $FZF_CMD
-# echo "$RG_PREFIX_STR"
 # exit 1
 # IFS sets the delimiter
 # -r: raw
@@ -159,6 +159,7 @@ IFS=: read -ra VAL < <(
       --cycle \
       --bind 'ctrl-/:change-preview-window(down|hidden|)' \
       --bind "change:reload:$RG_PREFIX_STR $RG_QUERY_PARSING $(array_join "${PATHS[@]+"${PATHS[@]}"}") || true" \
+      --bind 'enter:execute(code -g {1}: {2})' \
       --delimiter : \
       --disabled --query "$INITIAL_QUERY" \
       ${PREVIEW_STR[@]+"${PREVIEW_STR[@]}"}
