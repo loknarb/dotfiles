@@ -48,7 +48,7 @@ while getopts ":e:d:s:a:h" opt; do
        done ;;
     s) IFS=',' read -ra TYPE_PATTERNS <<< "$OPTARG"
        for pattern in "${TYPE_PATTERNS[@]}"; do
-         TYPE_FILTER_ARR+=("--type" "$pattern")
+         TYPE_FILTER_ARR+=("--glob" "'*.$pattern'")
        done ;;
     a) USE_GITIGNORE_OPT=('--no-ignore') ;;
     h) show_usage;;
