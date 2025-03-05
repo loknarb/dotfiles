@@ -148,7 +148,7 @@ if [[ $FZF_VER_PT1 == "0.2" && $FZF_VER_PT2 -lt 7 ]]; then
         PREVIEW_COMMAND='bat {1} --color=always --highlight-line {2} --line-range {2}:'
     fi
     if [[ "$PREVIEW_WINDOW" != "$FIND_WITHIN_FILES_PREVIEW_WINDOW_CONFIG" ]]; then
-        PREVIEW_WINDOW='right:50%'
+        PREVIEW_WINDOW='right:40%'
     fi
 fi
 
@@ -192,5 +192,10 @@ IFS=: read -ra VAL < <(
       --bind 'enter:execute(code -g {1}:{2})' \
       --delimiter : \
       --disabled --query "$INITIAL_QUERY" \
+      --color 'border:#aaaaaa,label:#cccccc' \
+      --color 'preview-border:#9999cc,preview-label:#ccccff' \
+      --color 'header-border:#6699cc,header-label:#99ccff' \
+      --color 'list-border:#669966,list-label:#99cc99' \
+      --color 'input-border:#996666,input-label:#ffcccc' \
       ${PREVIEW_STR[@]+"${PREVIEW_STR[@]}"}
 )

@@ -171,3 +171,6 @@ ottonl() {
 # source /Users/brumbas/.docker/init-zsh.sh || true # Added by Docker Desktop
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
