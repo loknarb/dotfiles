@@ -11,7 +11,7 @@ SetCapsLockState "AlwaysOff"
 
 ; === Window Management ===
 ^j::Send "#{Left}"                  ; Ctrl+J to snap window left
-^i::Send "#{Up}"                    ; Ctrl+I to maximize window
+^Enter::Send "#{Up}"                    ; Ctrl+Enter to maximize window
 ^k::Send "#{Down}"                  ; Ctrl+K to minimize window
 ^l::Send "#{Right}"                 ; Ctrl+L to snap window right
 #+5::Send "{^+5}"                   ; Win+Shift+5 shortcut
