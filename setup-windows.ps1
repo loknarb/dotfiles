@@ -344,7 +344,7 @@ function Install-WSL {
                     wsl -d Ubuntu-24.04 -e bash -c 'LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*') && curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" && tar xf lazygit.tar.gz lazygit && sudo install lazygit -D -t /usr/local/bin/'
 
                     # symlink for batcat to bat
-                    wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y lazygit lf fzf ripgrep bat && sudo rm -f /usr/local/bin/bat && sudo ln -sf /usr/bin/batcat /usr/local/bin/bat && sudo chmod +x /usr/local/bin/bat"
+                    wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y lazygit lf ripgrep bat && sudo rm -f /usr/local/bin/bat && sudo ln -sf /usr/bin/batcat /usr/local/bin/bat && sudo chmod +x /usr/local/bin/bat"
 
                     # install nvm or node in this linux
                     wsl -d Ubuntu-24.04 -e bash -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
@@ -352,7 +352,8 @@ function Install-WSL {
                     # symlinks  
                     wsl -d Ubuntu-24.04 -e bash -c "ln -s ~/dotfiles/.gitconfig ~/.gitconfig && ln -s ~/dotfiles/.gitconfig-work ~/.gitconfig-work && ln -s ~/dotfiles/.gitconfig-personal ~/.gitconfig-personal && ln -s ~/dotfiles/.zshrc ~/.zshrc && mkdir ~/.config/lf && ln -s ~/dotfiles/lfrc ~/.config/lf/lfrc"
 
-
+                    # install newest fzf because colors blah
+                    wsl -d Ubuntu-24.04 -e bash -c "git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install"
                     wsl -d Ubuntu-24.04 -e bash -c "mkdir ~/work && mkdir ~/personal && code ~"
                     $success = $true
                     Write-Host "WSL setup completed successfully!" -ForegroundColor Green                   
