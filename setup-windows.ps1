@@ -338,6 +338,7 @@ function Install-WSL {
             wsl -d Ubuntu-24.04 -e bash -c "sudo passwd $username"
 
             wsl -d Ubuntu-24.04 -e bash -c "echo -e '[user]\ndefault=$username' | sudo tee -a /etc/wsl.conf"
+            wsl 
             wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/loknarb/dotfiles ~/dotfiles"
 
                     
