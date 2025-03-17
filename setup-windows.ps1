@@ -350,7 +350,7 @@ function Install-WSL {
                     wsl -d Ubuntu-24.04 -e bash -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
 
                     # symlinks  
-                    wsl -d Ubuntu-24.04 -e bash -c "ln -s ~/dotfiles/.gitconfig ~/.gitconfig && ln -s ~/dotfiles/.gitconfig-work ~/.gitconfig-work && ln -s ~/dotfiles/.gitconfig-personal ~/.gitconfig-personal && ln -s ~/dotfiles/.zshrc ~/.zshrc && mkdir ~/.config/lf && ln -s ~/dotfiles/lfrc ~/.config/lf/lfrc"
+                    wsl -d Ubuntu-24.04 -e bash -c "ln -s ~/dotfiles/.gitconfig ~/.gitconfig && ln -s ~/dotfiles/.gitconfig-work ~/.gitconfig-work && ln -s ~/dotfiles/.gitconfig-personal ~/.gitconfig-personal && ln -s ~/dotfiles/.zshrc ~/.zshrc && mkdir ~/.config/lf && ln -s ~/dotfiles/lfrc ~/.config/lf/lfrc && ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf"
 
                     # install newest fzf because colors blah
                     wsl -d Ubuntu-24.04 -e bash -c "git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install"
