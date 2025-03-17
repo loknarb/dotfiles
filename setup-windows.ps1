@@ -323,16 +323,6 @@ function Install-WSL {
             $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
             $acl.SetAccessRule($accessRule)
             Set-Acl $newLocation $acl
-# Create a temporary script file
-$tempScript = New-TemporaryFile
-$scriptContent = @'
-#!/bin/bash
-LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": *"v\K[^"]*')
-curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-tar xf lazygit.tar.gz lazygit
-sudo install lazygit -D -t /usr/local/bin/
-rm lazygit.tar.gz
-'@
 
             # Setup Ubuntu environment
             Write-Host "Setting up Ubuntu environment..."
@@ -351,10 +341,10 @@ rm lazygit.tar.gz
                     wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
                     # this is for the current ohmyzsh cloning I'll already have my profile 
                     wsl -d Ubuntu-24.04 -e bash -c "rm ~/.zshrc"
-                    # wsl -d Ubuntu-24.04 -e bash -c 'LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": *"v\K[^"]*') && curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" && tar xf lazygit.tar.gz lazygit && sudo install lazygit -D -t /usr/local/bin/'
-                    wsl -d Ubuntu-24.04 -e bash -c "chmod +x ~/dotfiles/linux_init.sh"
 
-                    wsl -d Ubuntu-24.04 -e bash -c "~/dotfiles/linux_init.sh"
+                    # currently only installs lazy git but this can replace literally everything in here
+                    wsl -d Ubuntu-24.04 -e bash -c "chmod +x ~/dotfiles/linux-init.sh"
+                    wsl -d Ubuntu-24.04 -e bash -c "~/dotfiles/linux-init.sh"
 
                     # symlink for batcat to bat
                     wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y lf ripgrep bat && sudo rm -f /usr/local/bin/bat && sudo ln -sf /usr/bin/batcat /usr/local/bin/bat && sudo chmod +x /usr/local/bin/bat"
@@ -476,14 +466,14 @@ function Restart-ComputerWithPrompt {
 # Main execution
 try {
     if ($args.Count -gt 0 -and $args[0] -eq "-AdminMode") {
-        Write-CustomStatus "Running administrative tasks..."
-        Set-CustomRegistryKeys
-        Install-WingetPackages
-        Install-NerdFont -FontName 'CascadiaCode'
-        Remove-UnwantedApps
-        Remove-UnwantedWingetApps
+        # Write-CustomStatus "Running administrative tasks..."
+        # Set-CustomRegistryKeys
+        # Install-WingetPackages
+        # Install-NerdFont -FontName 'CascadiaCode'
+        # Remove-UnwantedApps
+        # Remove-UnwantedWingetApps
         Install-WSL
-        Install-AutoHotkeyScript -GitRepoUrl "https://github.com/loknarb/dotfiles" -ScriptName "coding_keybinds.ahk"
+        # Install-AutoHotkeyScript -GitRepoUrl "https://github.com/loknarb/dotfiles" -ScriptName "coding_keybinds.ahk"
     }
     else {
         # First run user-level installations
@@ -492,7 +482,7 @@ try {
             Write-Warning "Script started with admin privileges. Some user-level installations may not work correctly."
         }
         
-        Install-UserTools
+        # Install-UserTools
 
         # Then trigger admin portion
         Start-AdminScript
