@@ -334,7 +334,7 @@ wsl -d Ubuntu-24.04 -e bash -c "sudo useradd -m -s /bin/bash -G sudo $username"
 # Set password for the user
 wsl -d Ubuntu-24.04 -e bash -c "sudo passwd $username"
 
-
+wsl -d Ubuntu-24.04 -e bash -c "echo -e '[user]\ndefault=$username' | sudo tee -a /etc/wsl.conf"
                     wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/loknarb/dotfiles ~/dotfiles"
 
                     

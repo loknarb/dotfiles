@@ -18,7 +18,7 @@ handle_error() {
 }
 
 # Prompt for username
-read -p "Enter username for your Ubuntu environment: " USERNAME
+# read -p "Enter username for your Ubuntu environment: " USERNAME
 
 # Create the user if it doesn't exist
 # if ! id -u "$USERNAME" &>/dev/null; then
