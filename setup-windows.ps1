@@ -323,6 +323,16 @@ function Install-WSL {
             $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
             $acl.SetAccessRule($accessRule)
             Set-Acl $newLocation $acl
+# Create a temporary script file
+$tempScript = New-TemporaryFile
+$scriptContent = @'
+#!/bin/bash
+LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": *"v\K[^"]*')
+curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+tar xf lazygit.tar.gz lazygit
+sudo install lazygit -D -t /usr/local/bin/
+rm lazygit.tar.gz
+'@
 
             # Setup Ubuntu environment
             Write-Host "Setting up Ubuntu environment..."
@@ -341,16 +351,19 @@ function Install-WSL {
                     wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
                     # this is for the current ohmyzsh cloning I'll already have my profile 
                     wsl -d Ubuntu-24.04 -e bash -c "rm ~/.zshrc"
-                    wsl -d Ubuntu-24.04 -e bash -c 'LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*') && curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" && tar xf lazygit.tar.gz lazygit && sudo install lazygit -D -t /usr/local/bin/'
+                    # wsl -d Ubuntu-24.04 -e bash -c 'LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": *"v\K[^"]*') && curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" && tar xf lazygit.tar.gz lazygit && sudo install lazygit -D -t /usr/local/bin/'
+                    wsl -d Ubuntu-24.04 -e bash -c "chmod +x ~/dotfiles/linux_init.sh"
+
+                    wsl -d Ubuntu-24.04 -e bash -c "~/dotfiles/linux_init.sh"
 
                     # symlink for batcat to bat
-                    wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y lazygit lf ripgrep bat && sudo rm -f /usr/local/bin/bat && sudo ln -sf /usr/bin/batcat /usr/local/bin/bat && sudo chmod +x /usr/local/bin/bat"
+                    wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y lf ripgrep bat && sudo rm -f /usr/local/bin/bat && sudo ln -sf /usr/bin/batcat /usr/local/bin/bat && sudo chmod +x /usr/local/bin/bat"
 
                     # install nvm or node in this linux
                     wsl -d Ubuntu-24.04 -e bash -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
 
                     # symlinks  
-                    wsl -d Ubuntu-24.04 -e bash -c "ln -s ~/dotfiles/.gitconfig ~/.gitconfig && ln -s ~/dotfiles/.gitconfig-work ~/.gitconfig-work && ln -s ~/dotfiles/.gitconfig-personal ~/.gitconfig-personal && ln -s ~/dotfiles/.zshrc ~/.zshrc && mkdir ~/.config/lf && ln -s ~/dotfiles/lfrc ~/.config/lf/lfrc && ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf"
+                    wsl -d Ubuntu-24.04 -e bash -c "ln -s ~/dotfiles/.gitconfig ~/.gitconfig && ln -s ~/dotfiles/.gitconfig-work ~/.gitconfig-work && ln -s ~/dotfiles/.gitconfig-personal ~/.gitconfig-personal && ln -s ~/dotfiles/.zshrc ~/.zshrc && mkdir -p ~/config/lf && ln -s ~/dotfiles/lfrc ~/.config/lf/lfrc && ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf"
 
                     # install newest fzf because colors blah
                     wsl -d Ubuntu-24.04 -e bash -c "git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install"
