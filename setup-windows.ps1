@@ -12,67 +12,67 @@ function Set-CustomRegistryKeys {
     $registryChanges = @(
         # Snap-related ugliness removed
         @{
-            Path = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-            Name = "SnapFill"
-            Type = "REG_DWORD"
+            Path  = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+            Name  = "SnapFill"
+            Type  = "REG_DWORD"
             Value = "0"
         },
         @{
-            Path = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-            Name = "SnapAssist"
-            Type = "REG_DWORD"
+            Path  = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+            Name  = "SnapAssist"
+            Type  = "REG_DWORD"
             Value = "0"
         },
         @{
-            Path = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-            Name = "JointResize"
-            Type = "REG_DWORD"
+            Path  = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+            Name  = "JointResize"
+            Type  = "REG_DWORD"
             Value = "0"
         },
         # Attempt to block LWin+L from locking our window movement 
         @{
-            Path = "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\System"
-            Name = "DisableLockWorkstation"
-            Type = "REG_DWORD"
+            Path  = "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\System"
+            Name  = "DisableLockWorkstation"
+            Type  = "REG_DWORD"
             Value = "1"
         },
         # this swaps CTRL with LWin and vice versa
         @{
-            Path = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout"
-            Name = "Scancode Map"
-            Type = "REG_BINARY"
+            Path  = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout"
+            Name  = "Scancode Map"
+            Type  = "REG_BINARY"
             Value = "0000000000000000030000001d005be05be01d0000000000"
         },
         @{
-            Path = "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\Explorer"
-            Name = "DisableNotificationCenter"
-            Type = "REG_DWORD"
+            Path  = "HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\Explorer"
+            Name  = "DisableNotificationCenter"
+            Type  = "REG_DWORD"
             Value = "1"
         }
         # Mouse acceleration settings (1 = off, 0 = on)
         @{
-            Path = "HKEY_CURRENT_USER\Control Panel\Mouse"
-            Name = "MouseSpeed"
-            Type = "REG_DWORD"
+            Path  = "HKEY_CURRENT_USER\Control Panel\Mouse"
+            Name  = "MouseSpeed"
+            Type  = "REG_DWORD"
             Value = "0"
         },
         @{
-            Path = "HKEY_CURRENT_USER\Control Panel\Mouse"
-            Name = "MouseThreshold1"
-            Type = "REG_DWORD"
+            Path  = "HKEY_CURRENT_USER\Control Panel\Mouse"
+            Name  = "MouseThreshold1"
+            Type  = "REG_DWORD"
             Value = "0"
         },
         @{
-            Path = "HKEY_CURRENT_USER\Control Panel\Mouse"
-            Name = "MouseThreshold2"
-            Type = "REG_DWORD"
+            Path  = "HKEY_CURRENT_USER\Control Panel\Mouse"
+            Name  = "MouseThreshold2"
+            Type  = "REG_DWORD"
             Value = "0"
         },
         # Windows Mouse Pointer Speed (6/11 setting)
         @{
-            Path = "HKEY_CURRENT_USER\Control Panel\Mouse"
-            Name = "MouseSensitivity"
-            Type = "REG_SZ"
+            Path  = "HKEY_CURRENT_USER\Control Panel\Mouse"
+            Name  = "MouseSensitivity"
+            Type  = "REG_SZ"
             Value = "10"
         }
     )
@@ -86,10 +86,12 @@ function Set-CustomRegistryKeys {
                 $result = reg add $change.Path /v $change.Name /t $change.Type /d $change.Value /f
                 if ($LASTEXITCODE -eq 0) {
                     Write-Host "Successfully applied binary registry change: $($change.Path)\$($change.Name)" -ForegroundColor Green
-                } else {
+                }
+                else {
                     throw "reg.exe command failed with exit code $LASTEXITCODE"
                 }
-            } else {
+            }
+            else {
                 # Use PowerShell commands for non-binary values
                 if (!(Test-Path "Registry::$($change.Path)")) {
                     New-Item -Path "Registry::$($change.Path)" -Force | Out-Null
@@ -197,15 +199,15 @@ function Remove-UnwantedApps {
     Write-Status "Removing unwanted Windows apps"
     # Remove some default apps I don't use
     @(
-    'Microsoft.WindowsFeedbackHub',
-    'Microsoft.GetHelp'
-    'Microsoft.Getstarted',
-    'Microsoft.MixedReality.Portal',
-    'Microsoft.SkypeApp',
-    'Microsoft.Microsoft3DViewer',
-    'Microsoft.MicrosoftSolitaireCollection',
-    'Microsoft.XboxApp'
-  ) | Foreach-Object { Get-AppxPackage -Name $_ | Remove-AppxPackage }
+        'Microsoft.WindowsFeedbackHub',
+        'Microsoft.GetHelp'
+        'Microsoft.Getstarted',
+        'Microsoft.MixedReality.Portal',
+        'Microsoft.SkypeApp',
+        'Microsoft.Microsoft3DViewer',
+        'Microsoft.MicrosoftSolitaireCollection',
+        'Microsoft.XboxApp'
+    ) | Foreach-Object { Get-AppxPackage -Name $_ | Remove-AppxPackage }
 }
 function Remove-UnwantedWingetApps {
     Write-Status "Removing unwanted Windows apps"
@@ -241,7 +243,7 @@ function Remove-UnwantedWingetApps {
 
 function Install-AutoHotkeyScript {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$GitRepoUrl,
         [string]$ScriptName = "script.ahk",
         [string]$BranchName = "main"
@@ -264,7 +266,8 @@ function Install-AutoHotkeyScript {
         if (!(Test-Path ".git")) {
             Write-Host "Cloning repository..."
             git clone --branch $BranchName $GitRepoUrl .
-        } else {
+        }
+        else {
             Write-Host "Updating repository..."
             git pull origin $BranchName
         }
@@ -326,47 +329,47 @@ function Install-WSL {
 
             # Setup Ubuntu environment
             Write-Host "Setting up Ubuntu environment..."
-                    $username = Read-Host "Enter username for your Ubuntu environment"
+            $username = Read-Host "Enter username for your Ubuntu environment"
 
-# Create the user with sudo privileges
-wsl -d Ubuntu-24.04 -e bash -c "sudo useradd -m -s /bin/bash -G sudo $username"
+            # Create the user with sudo privileges
+            wsl -d Ubuntu-24.04 -e bash -c "sudo useradd -m -s /bin/bash -G sudo $username"
 
-# Set password for the user
-wsl -d Ubuntu-24.04 -e bash -c "sudo passwd $username"
+            # Set password for the user
+            wsl -d Ubuntu-24.04 -e bash -c "sudo passwd $username"
 
-wsl -d Ubuntu-24.04 -e bash -c "echo -e '[user]\ndefault=$username' | sudo tee -a /etc/wsl.conf"
-                    wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/loknarb/dotfiles ~/dotfiles"
+            wsl -d Ubuntu-24.04 -e bash -c "echo -e '[user]\ndefault=$username' | sudo tee -a /etc/wsl.conf"
+            wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/loknarb/dotfiles ~/dotfiles"
 
                     
                     
 
-                    wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y zsh"
+            wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y zsh"
 
-                    wsl -d Ubuntu-24.04 -e bash -c "sudo apt update && sudo apt install -y git curl && curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k"
+            wsl -d Ubuntu-24.04 -e bash -c "sudo apt update && sudo apt install -y git curl && curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k"
 
-                    wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-                    wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-                    # this is for the current ohmyzsh cloning I'll already have my profile 
-                    wsl -d Ubuntu-24.04 -e bash -c "rm ~/.zshrc"
+            wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+            wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+            # this is for the current ohmyzsh cloning I'll already have my profile 
+            wsl -d Ubuntu-24.04 -e bash -c "rm ~/.zshrc"
 
-                    # currently only installs lazy git but this can replace literally everything in here
-                    wsl -d Ubuntu-24.04 -e bash -c "chmod +x ~/dotfiles/linux-init.sh"
-                    wsl -d Ubuntu-24.04 -e bash -c "~/dotfiles/linux-init.sh"
+            # currently only installs lazy git but this can replace literally everything in here
+            wsl -d Ubuntu-24.04 -e bash -c "chmod +x ~/dotfiles/linux-init.sh"
+            wsl -d Ubuntu-24.04 -e bash -c "~/dotfiles/linux-init.sh"
 
-                    # symlink for batcat to bat
-                    wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y lf ripgrep bat && sudo rm -f /usr/local/bin/bat && sudo ln -sf /usr/bin/batcat /usr/local/bin/bat && sudo chmod +x /usr/local/bin/bat"
+            # symlink for batcat to bat
+            wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y lf ripgrep bat && sudo rm -f /usr/local/bin/bat && sudo ln -sf /usr/bin/batcat /usr/local/bin/bat && sudo chmod +x /usr/local/bin/bat"
 
-                    # install nvm or node in this linux
-                    wsl -d Ubuntu-24.04 -e bash -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
+            # install nvm or node in this linux
+            wsl -d Ubuntu-24.04 -e bash -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"
 
-                    # symlinks  
-                    wsl -d Ubuntu-24.04 -e bash -c "ln -s ~/dotfiles/.gitconfig ~/.gitconfig && ln -s ~/dotfiles/.gitconfig-work ~/.gitconfig-work && ln -s ~/dotfiles/.gitconfig-personal ~/.gitconfig-personal && ln -s ~/dotfiles/.zshrc ~/.zshrc && mkdir -p ~/config/lf && ln -s ~/dotfiles/lfrc ~/.config/lf/lfrc && ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf"
+            # symlinks  
+            wsl -d Ubuntu-24.04 -e bash -c "ln -s ~/dotfiles/.gitconfig ~/.gitconfig && ln -s ~/dotfiles/.gitconfig-work ~/.gitconfig-work && ln -s ~/dotfiles/.gitconfig-personal ~/.gitconfig-personal && ln -s ~/dotfiles/.zshrc ~/.zshrc && mkdir -p ~/.config/lf && ln -s ~/dotfiles/lfrc ~/.config/lf/lfrc && ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf"
 
-                    # install newest fzf because colors blah
-                    wsl -d Ubuntu-24.04 -e bash -c "git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install"
-                    wsl -d Ubuntu-24.04 -e bash -c "mkdir ~/work && mkdir ~/personal && code ~"
-                    $success = $true
-                    Write-Host "WSL setup completed successfully!" -ForegroundColor Green                   
+            # install newest fzf because colors blah
+            wsl -d Ubuntu-24.04 -e bash -c "git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install"
+            wsl -d Ubuntu-24.04 -e bash -c "mkdir ~/work && mkdir ~/personal && code ~"
+            $success = $true
+            Write-Host "WSL setup completed successfully!" -ForegroundColor Green                   
         }
         catch {
             if ($attempt -lt $maxAttempts) {
@@ -379,11 +382,11 @@ wsl -d Ubuntu-24.04 -e bash -c "echo -e '[user]\ndefault=$username' | sudo tee -
                 throw
             }
         }
-    $attempt++
+        $attempt++
     }
 }
 
- # Main execution
+# Main execution
 
 function Write-CustomStatus {
     param([string]$Message)
@@ -402,18 +405,22 @@ function Start-AdminScript {
         
         if ($PSCommandPath) {
             $scriptPath = $PSCommandPath
-        } elseif ($PSScriptRoot) {
+        }
+        elseif ($PSScriptRoot) {
             $scriptPath = Join-Path $PSScriptRoot (Split-Path $PSCommandPath -Leaf)
-        } elseif ($script:MyInvocation.MyCommand.Path) {
+        }
+        elseif ($script:MyInvocation.MyCommand.Path) {
             $scriptPath = $script:MyInvocation.MyCommand.Path
-        } else {
+        }
+        else {
             throw "Could not determine script path. Please run the script with a fully qualified path."
         }
         if (Test-Path $scriptPath) {
             Write-Verbose "Elevating script: $scriptPath"
             Start-Process powershell -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -AdminMode" -Wait
             return $false
-        } else {
+        }
+        else {
             throw "Script path not found: $scriptPath"
         }
     }
@@ -466,7 +473,8 @@ function Restart-ComputerWithPrompt {
         Write-Host "`nRestarting computer in 5 seconds..."
         Start-Sleep -Seconds 5
         Restart-Computer -Force
-    } else {
+    }
+    else {
         Write-Host "`nSkipping restart. Please restart your computer manually to complete setup."
     }
 }
