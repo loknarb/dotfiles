@@ -326,7 +326,14 @@ function Install-WSL {
 
             # Setup Ubuntu environment
             Write-Host "Setting up Ubuntu environment..."
-                    wsl -d Ubuntu-24.04 -e bash -c "sudo useradd -m -s /bin/bash -G sudo --disabled-password seb"
+                    $username = Read-Host "Enter username for your Ubuntu environment"
+
+# Create the user with sudo privileges
+wsl -d Ubuntu-24.04 -e bash -c "sudo useradd -m -s /bin/bash -G sudo $username"
+
+# Set password for the user
+wsl -d Ubuntu-24.04 -e bash -c "sudo passwd $username"
+
 
                     wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/loknarb/dotfiles ~/dotfiles"
 
