@@ -69,7 +69,13 @@ handle_error() {
 # if [ ! -d "$USER_HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" ]; then
 #     sudo -u "$USERNAME" git clone https://github.com/zsh-users/zsh-autosuggestions "$USER_HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
 # fi
-
+# Install JDK Temurin 21
+display_status "Installing JDK 21"
+sudo apt install -y wget apt-transport-https gpg
+wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | sudo sh -c 'gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null'
+echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | sudo tee /etc/apt/sources.list.d/adoptium.list
+sudo apt update
+sudo apt install temurin-21-jdk
 # Install LazyGit
 display_status "Installing LazyGit"
 LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -o -E 'tag_name": "v(.*)",' | sed 's/tag_name": "v//;s/",//')
