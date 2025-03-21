@@ -77,7 +77,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git yarn history zsh-autosuggestions zsh-syntax-highlighting tmux fzf)
+plugins=(git yarn history z zsh-autosuggestions zsh-syntax-highlighting tmux fzf)
 source $ZSH/oh-my-zsh.sh
 
 # export MANPATH="/usr/local/man:$MANPATH"
@@ -101,7 +101,6 @@ source $ZSH/oh-my-zsh.sh
 # For a full list of active aliases, run `alias`.
 #
 # Example aliases
-source ~/.local_aliases
 alias zshconfig="code ~/.zshrc"
 alias npmrc="code ~/.npmrc"
 alias c="clear"
@@ -122,7 +121,6 @@ export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/b
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-fuckyarn () {  yarn install && yarn install --frozen-lockfile --check-files}
 
 
 # kill port or kp for short
@@ -173,8 +171,8 @@ ottonl() {
 # source /Users/brumbas/.docker/init-zsh.sh || true # Added by Docker Desktop
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
-
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+export PATH="$HOME/bin:$PATH"

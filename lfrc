@@ -4,6 +4,7 @@ map , push %mkdir<space>
 # Create file with period key
 map . push %touch<space>
 
+map <a-l> push %lmd<space> # create markdown template file
 # Optional: Add these for a more interactive experience
 # Create directory with confirmation
 cmd mkdir %{{
@@ -18,6 +19,13 @@ cmd touch %{{
     read ans
     touch $ans
 }}
+# Create Markdown Template with confirmation
+cmd lmd %{{
+    printf "File Name: "
+    read ans
+    lmd "$ans"
+}}
+
 
 map o $code "$f"          # open current file
 map O $code "$PWD"        # open current directory
@@ -46,12 +54,15 @@ cmd open-editor ${{
 # }}
 
 # Secure delete command with confirmation
-cmd delete %{{
+cmd delete ${{
     set -f
     printf "$fx\n"
     printf " delete? [y/n] "
     read ans
-    [ "$ans" = "y" ] && rm -rf $fx
+    if [ "$ans" = "y" ]; then
+        IFS="$(printf '\n\t')"  # Change IFS to only newline and tab
+        rm -rf $fx
+    fi
 }}
 
 # Bind shift+delete to permanent delete

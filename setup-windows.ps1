@@ -340,9 +340,10 @@ function Install-WSL {
             wsl -d Ubuntu-24.04 -e bash -c "echo -e '[user]\ndefault=$username' | sudo tee -a /etc/wsl.conf"
             wsl 
             wsl -d Ubuntu-24.04 -e bash -c "git clone https://github.com/loknarb/dotfiles ~/dotfiles"
-
-                    
-                    
+            $email = Read-Host "Enter email for your SSH"
+            wsl -d Ubuntu-24.04 -e bash -c "ssh-keygen -t ed25519 -C '$email'"                    
+            # Extract the newly created key
+            wsl -d Ubuntu-24.04 -e bash -c "cat ~/.ssh/id_ed25519.pub | clip.exe"       
 
             wsl -d Ubuntu-24.04 -e bash -c "sudo apt install -y zsh"
 
@@ -371,6 +372,8 @@ function Install-WSL {
             wsl -d Ubuntu-24.04 -e bash -c "mkdir ~/work && mkdir ~/personal && code ~"
             $success = $true
             Write-Host "WSL setup completed successfully!" -ForegroundColor Green                   
+            # bin-scripts needs installation for this we need the copied key
+            # chmod +x the scripts and then we can use them :)
         }
         catch {
             if ($attempt -lt $maxAttempts) {
