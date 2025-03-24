@@ -92,8 +92,22 @@ source $ZSH/oh-my-zsh.sh
 #   export EDITOR='mvim'
 # fi
 
-# Compilation flags
-# export ARCHFLAGS="-arch x86_64"
+## -- Keybinds ---
+bindkey '^p' history-search-backward
+bindkey '^n' history-search-forward
+
+## -- History --
+HISTSIZE=5000
+HISTFILE=~/.zsh_history
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
 
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
@@ -122,6 +136,14 @@ export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/b
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# Interactive z with fzf
+fz() {
+  local dir
+  dir="$(z -l | awk '{print $2}' | fzf --height 40% --reverse --tac +s)"
+  if [ -n "$dir" ]; then
+    cd "$dir" || return
+  fi
+}
 
 # kill port or kp for short
 kp() {
