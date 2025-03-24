@@ -2,12 +2,16 @@
 	email = Sebastien.Paul.Brumbaugh@empiriecom.com
 	name = s-brum
 [core]
-	pager = diff-so-fancy | less --tabs=4 -RFX
-	editor = code --wait
+  pager = delta
+  editor = code --wait
 [interactive]
-	diffFilter = diff-so-fancy --patch
+  diffFilter = delta --color-only 
   path = ~/work/.gitconfig
-
+[delta]
+    navigate = true  # use n and N to move between diff sections
+    line-numbers = true
+[merge]
+    conflictstyle = zdiff3
 [includeIf "gitdir:~/work/"]
     path = ~/.gitconfig-work
 [includeIf "gitdir:~/personal/"]
