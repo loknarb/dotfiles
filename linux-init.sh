@@ -86,6 +86,8 @@ rm /tmp/lazygit.tar.gz
 
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
+mkdir -p ~/.config/lazygit
+ln -s ~/dotfiles/lazygit.yml ~/.config/lazygit/config.yml
 # Install other helpful tools
 # display_status "Installing additional tools"
 # sudo apt install -y lf ripgrep bat
