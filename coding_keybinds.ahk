@@ -8,27 +8,27 @@ SetCapsLockState "AlwaysOff"
 ^!+z::WinSetAlwaysOnTop -1, "A"  ; Ctrl+Alt+Shift+Z to toggle window always on top
 ^q::Send "!{F4}"                  ; Ctrl+Q to close window
 #r::Send "^r"                     ; Win+R to reload
-!+z::  ; Alt + Shift + Z
-    SetTitleMatchMode, 2  ; Allows partial window title matching
+!+z::{  ; Alt + Shift + Z
+    SetTitleMatchMode(2)  ; Allows partial window title matching
     if WinExist("ahk_exe Code.exe")  ; Check if VS Code is running
     {
-        WinActivate  ; Bring VS Code to the front
+        WinActivate()  ; Bring VS Code to the front
     }
     else
     {
-        Run, cmd /c "code .", , Hide
+        Run("cmd.exe /c code .", , "Hide")  ; Open VS Code in the current directory
     }
-return
-!+x::  ; Alt + Shift + X
-    IfWinExist, ahk_exe WindowsTerminal.exe
+}
+!+x::{  ; Alt + Shift + X
+    if WinExist("ahk_exe WindowsTerminal.exe")
     {
-        WinActivate  ; Bring Windows Terminal to the front
+        WinActivate()  ; Bring Windows Terminal to the front
     }
     else
     {
-        Run, wt.exe
+        Run("wt.exe")
     }
-return
+}
 
 
 ; === Window Management ===
