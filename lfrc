@@ -1,6 +1,9 @@
+set hidden true
+set ignorecase true
+set icons true
+
 # Create directory with comma key
 map , push %mkdir<space>
-
 # Create file with period key
 map . push %touch<space>
 
@@ -29,9 +32,8 @@ cmd lmd %{{
 
 map o $code "$f"          # open current file
 map O $code "$PWD"        # open current directory
-
 # Alternative: Open file/directory in VS Code (new window)
-map <c-o> $code -n "$f"   # open current file in new window
+map <c-o> $lfcd "$PWD"  # open current file in new window
 
 # For opening multiple selected files
 cmd open-editor ${{

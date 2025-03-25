@@ -122,7 +122,6 @@ alias fullturbo="git push --no-verify"
 alias gpush="git push -u origin HEAD 2>&1 | grep -o 'https://gitlab\.com/empiriecom/[^/]*/[^/]*/-/merge_requests/new?merge_request%5Bsource_branch%5D=[^ ]*' | xargs open"
 alias gg="lazygit"
 alias gbump="git commit --allow-empty -m 'chore: retrigger pipeline' && git push --no-verify"
-alias ff="~/dotfiles/find-files.sh"
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 export PUPPETEER_EXECUTABLE_PATH=`which chromium`
 
@@ -143,51 +142,6 @@ fz() {
   fi
 }
 
-# kill port or kp for short
-kp() {
-  local port=$1
-  local pids=$(lsof -t -i tcp:"$port")
-
-  if [ -z "$pids" ]; then
-    echo "No processes found on port $port."
-  else
-    echo "Processes to be terminated on port $port:"
-
-    # Iterate over the PIDs and display their corresponding process names
-    for pid in $pids; do
-      local process=$(ps -p "$pid" -o comm=)
-      echo "$process (PID: $pid)"
-    done
-
-    # Terminate the processes
-    echo "Terminating the processes..."
-    echo "$pids" | xargs kill
-
-    echo "Processes on port $port have been terminated."
-  fi
-}
-
-repoupdate(){
-  dir=$(pwd)
-for repo in "$dir"/*; do
-  if [ -d "$repo" ] && [ -d "$repo/.git" ]; then
-    echo "Updating $repo"
-    cd "$repo"
-    git checkout master
-    git pull
-  fi
-done
-echo "All repositories have been updated."
-
-}
-## work stuff
-baur() { 
-  yarn cli tenant baurde && yarn dev 
-  }
-ottonl() { 
-  yarn cli tenant ottonl && yarn dev 
-  }
-  
 # source /Users/brumbas/.docker/init-zsh.sh || true # Added by Docker Desktop
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
