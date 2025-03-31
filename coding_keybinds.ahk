@@ -58,7 +58,6 @@ SetCapsLockState "AlwaysOff"
     !+w::Send "{=}"
     !e::Send "{|}"
     !+q::Send "{<}"
-    ::->::Send "{U+2192}"  ; Arrow symbol
 
 ; === WhatsApp-Specific Controls ===
 #HotIf WinActive("ahk_exe WhatsApp.exe")

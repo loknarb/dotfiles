@@ -150,3 +150,11 @@ test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 export PATH="$HOME/bin:$PATH"
+
+# pnpm
+export PNPM_HOME="/home/seb/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
