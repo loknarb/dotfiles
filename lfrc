@@ -1,3 +1,4 @@
+# Open file in an existing Neovim session with Enter
 set hidden true
 set ignorecase true
 set icons true
@@ -28,7 +29,6 @@ cmd lmd %{{
     read ans
     lmd "$ans"
 }}
-
 
 map o $code "$f"          # open current file
 map O $code "$PWD"        # open current directory

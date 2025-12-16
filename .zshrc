@@ -84,7 +84,11 @@ source $ZSH/oh-my-zsh.sh
 
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
-
+# i [[ -n "$P9K_SSH" ]] || [[ "$P9K_SSH_TTY" == /dev/pts/* ]]; then
+#   echo "SSH session"
+# else
+#   echo "Local session"
+# fi
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
 #   export EDITOR='vim'
@@ -122,6 +126,9 @@ alias fullturbo="git push --no-verify"
 alias gpush="git push -u origin HEAD 2>&1 | grep -o 'https://gitlab\.com/empiriecom/[^/]*/[^/]*/-/merge_requests/new?merge_request%5Bsource_branch%5D=[^ ]*' | xargs open"
 alias gg="lazygit"
 alias gbump="git commit --allow-empty -m 'chore: retrigger pipeline' && git push --no-verify"
+alias tmm="tmux new-session -A -t 'main'"
+# Prioritize local nvim over Homebrew
+alias nvim="$HOME/.local/bin/nvim"
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 export PUPPETEER_EXECUTABLE_PATH=`which chromium`
 
@@ -136,8 +143,8 @@ export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/b
 # Interactive z with fzf
 fz() {
   local dir
-  dir="$(z -l | awk '{print $2}' | fzf --height 40% --reverse --tac +s)"
   if [ -n "$dir" ]; then
+    dir="$(z -l | awk '{print $2}' | fzf --height 40% --reverse --tac +s)"
     cd "$dir" || return
   fi
 }
@@ -158,3 +165,27 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+#Created by `pipx` on 2025-07-22 16:16:51
+# export NVIM_LISTEN_ADDRESS=/tmp/nvim
+if [ -n "$TMUX" ]; then
+    function chpwd() {
+        tmux set-environment -t $(tmux display -p "#S") TMUX_PWD "$PWD"
+        tmux refresh-client -S
+    }
+fi
+# Note: ~/.local/bin is now added at the end to prioritize it over everything
+# Update tmux current path when changing directories
+
+
+# opencode
+export PATH=/home/seb/.opencode/bin:$PATH
+
+# MUST be last: Prioritize ~/.local/bin over all other paths
+export PATH="$HOME/.local/bin:$PATH"
+alias nvim="$HOME/.local/bin/nvim"
+
+# Clipper alias - pipe anything to Mac clipboard
+alias clip='~/clipper-proxy.sh'
